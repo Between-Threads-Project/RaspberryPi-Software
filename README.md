@@ -1,6 +1,6 @@
-# Marionette Control System - Raspberry Pi Software
+# Between Threads - Raspberry Pi Software
 
-This repository contains the software running on a Raspberry Pi 3 Model B v1.2. It handles UDP data reception and PWM control for servo motors to actuate a marionette.
+This repository contains the software running on a Raspberry Pi 3 Model B v1.2. It handles UDP data reception and PWM control for servo motors to actuate the marionette.
 
 ## Features
 
@@ -21,7 +21,7 @@ This repository contains the software running on a Raspberry Pi 3 Model B v1.2. 
 
 ```bash
 cd ~
-git clone <REPO_URL>
+git clone https://github.com/Between-Threads-Project/RaspberryPi-Software
 cd RaspberryPi-Software
 ```
 
