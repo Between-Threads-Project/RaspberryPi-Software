@@ -17,45 +17,19 @@ This repository contains the software running on a Raspberry Pi 3 Model B v1.2. 
 
 ## Installation
 
-### 1. Clone the repository
-
 ```bash
-cd ~/Desktop/
-git clone https://github.com/Between-Threads-Project/RaspberryPi-Software
-cd RaspberryPi-Software
-```
-
-### 2. Install dependencies with uv
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv sync
-```
-
-### 3. Install and start `pigpio`
-
-`pigpio` requires a daemon running in the background.
-
-#### Install pigpio
-
-```bash
-cd ~
-wget https://github.com/joan2937/pigpio/archive/master.zip
-unzip master.zip
-cd pigpio-master
-make
-sudo make install
-sudo apt install python-setuptools python3-setuptools
-```
-
-#### Start the daemon
-
-```bash
-sudo pigpiod
+curl -LsSf https://raw.githubusercontent.com/Between-Threads-Project/RaspberryPi-Software/main/install.sh | sh
 ```
 
 > [!WARNING]
-> The script will fail if the daemon is not running.
+> The install script should lauch the daemon the python script could fail if it is not running.
+
+If it's not running do :
+
+```bash
+cd ~/pigpio-master
+sudo pigpiod
+```
 
 ### 4. Configure GPIO pins
 

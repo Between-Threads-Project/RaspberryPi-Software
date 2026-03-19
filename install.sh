@@ -45,10 +45,10 @@ fi
 # ---------------------------
 echo "⚡ Starting pigpio daemon..."
 sudo pigpiod
-cd ~/Desktop/RaspberryPi-Software/
 
 # ---------------------------
 # 5. Done
 # ---------------------------
 echo "✅ Installation complete!"
-echo "Run your script with: uv run ~/Desktop/RaspberryPi-Software/main.py"
+echo "Move to the folder with : cd ~/Desktop/RaspberryPi-Software/"
+echo "Run your script with: uv run main.py"
