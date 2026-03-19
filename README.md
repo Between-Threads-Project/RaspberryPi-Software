@@ -20,7 +20,7 @@ This repository contains the software running on a Raspberry Pi 3 Model B v1.2. 
 ### 1. Clone the repository
 
 ```bash
-cd ~
+cd ~/Desktop/
 git clone https://github.com/Between-Threads-Project/RaspberryPi-Software
 cd RaspberryPi-Software
 ```
@@ -39,6 +39,7 @@ uv sync
 #### Install pigpio
 
 ```bash
+cd ~
 wget https://github.com/joan2937/pigpio/archive/master.zip
 unzip master.zip
 cd pigpio-master
@@ -53,12 +54,6 @@ sudo apt install python-setuptools python3-setuptools
 sudo pigpiod
 ```
 
-#### (Optional) Enable auto-start on boot
-
-```bash
-sudo systemctl enable pigpiod
-sudo systemctl start pigpiod
-```
 > [!WARNING]
 > The script will fail if the daemon is not running.
 
@@ -78,6 +73,7 @@ Modify `PORT_SERVO_MAP` in `main.py` if needed.
 ### 5. Run the script
 
 ```bash
+cd ~/Desktop/RaspberryPi-Software/
 uv run main.py
 ```
 
