@@ -100,6 +100,7 @@ try:
 
             try:
                 command: Dict[str, float] = json.loads(data.decode())
+                print(command)
             except json.JSONDecodeError:
                 print("Invalid JSON:", data)
                 continue
@@ -119,7 +120,7 @@ try:
                 move_servo(pin, value)
 
 except KeyboardInterrupt:
-    print("Stopping server...")
+    print("\nStopping.", end=" ")
 
 finally:
     # Stop all servos
@@ -133,4 +134,4 @@ finally:
     for sock in sockets:
         sock.close()
 
-    print("Clean exit")
+    print("Clean exit.")
