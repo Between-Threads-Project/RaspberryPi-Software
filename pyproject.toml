@@ -1,9 +1,10 @@
 [project]
 name = "raspberrypi-software"
 version = "0.1.0"
-description = "Add your description here"
+description = "Software running on the Raspberry Pi to control the 4 motors."
 readme = "README.md"
-requires-python = "==3.13.12"
+requires-python = ">=3.14"
 dependencies = [
-    "rpi-gpio",
+    "pigpio>=1.78",
+    "ruff>=0.15.6",
 ]

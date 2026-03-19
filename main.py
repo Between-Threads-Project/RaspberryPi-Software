@@ -1,87 +1,80 @@
 import json
 import select
 import socket
-import time
+from typing import Dict
 
-import RPi.GPIO as GPIO
+import pigpio
 
 # =========================================================
 # CONFIG
 # =========================================================
 
-HOST = "0.0.0.0"
+HOST: str = "0.0.0.0"
 
-PORT_SERVO_MAP = {
+PORT_SERVO_MAP: Dict[int, Dict[str, int]] = {
     5000: {
-        "index": 13,
-        "middle": 12,
+        "index": 12,
+        "middle": 18,
     },
     5001: {
-        "index": 19,
-        "middle": 18,
+        "index": 13,
+        "middle": 19,
     },
 }
 
-PWM_FREQ = 50
-SERVO_DELAY = 0.02
-
+# Pulsewidth range for servos (in microseconds)
+SERVO_MIN: int = 500
+SERVO_MAX: int = 2500
 
 # =========================================================
-# GPIO SETUP
+# PIGPIO SETUP
 # =========================================================
 
-GPIO.setmode(GPIO.BCM)
+pi = pigpio.pi()
 
-PWM = {}
+if not pi.connected:
+    raise RuntimeError("pigpio daemon not running")
 
+# Initialize all servo pins
 for port in PORT_SERVO_MAP:
     for pin in PORT_SERVO_MAP[port].values():
-        GPIO.setup(pin, GPIO.OUT)
+        pi.set_mode(pin, pigpio.OUTPUT)
 
-        pwm = GPIO.PWM(pin, PWM_FREQ)
-        pwm.start(0)
-
-        PWM[pin] = pwm
-
+print("Servos initialized")
 
 # =========================================================
 # SERVO UTILS
 # =========================================================
 
 
-def clamp(v, vmin, vmax):
-    return max(vmin, min(vmax, v))
+def clamp(value: float, vmin: float, vmax: float) -> float:
+    """Clamp a value between vmin and vmax."""
+    return max(vmin, min(vmax, value))
 
 
-def value_to_angle(value):
+def value_to_pulse(value: float) -> int:
     """
-    Map -1 → 1 to 0° → 180°
+    Convert a normalized value (-1 to 1) to a servo pulsewidth.
     """
     value = clamp(value, -1.0, 1.0)
-    return (value + 1) * 90
+    normalized = (value + 1) / 2
+    pulse = SERVO_MIN + normalized * (SERVO_MAX - SERVO_MIN)
+    return int(pulse)
 
 
-def angle_to_duty(angle):
-    return 2 + (angle / 18)
-
-
-def move_servo(pin, value):
-
-    angle = value_to_angle(value)
-    duty = angle_to_duty(angle)
-
-    pwm = PWM[pin]
-
-    pwm.ChangeDutyCycle(duty)
-    time.sleep(SERVO_DELAY)
-    pwm.ChangeDutyCycle(0)
+def move_servo(pin: int, value: float) -> None:
+    """
+    Move a servo connected to a given pin using a normalized value.
+    """
+    pulse = value_to_pulse(value)
+    pi.set_servo_pulsewidth(pin, pulse)
 
 
 # =========================================================
 # UDP SETUP
 # =========================================================
 
-sockets = {}
+sockets: Dict[socket.socket, int] = {}
 
 for port in PORT_SERVO_MAP:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -91,8 +84,7 @@ for port in PORT_SERVO_MAP:
 
     sockets[sock] = port
 
-print("Listening on:", list(PORT_SERVO_MAP.keys()))
-
+print("Listening UDP on ports:", list(PORT_SERVO_MAP.keys()))
 
 # =========================================================
 # MAIN LOOP
@@ -100,14 +92,14 @@ print("Listening on:", list(PORT_SERVO_MAP.keys()))
 
 try:
     while True:
-        readable, _, _ = select.select(sockets.keys(), [], [])
+        readable, _, _ = select.select(list(sockets.keys()), [], [])
 
         for sock in readable:
             data, addr = sock.recvfrom(1024)
             port = sockets[sock]
 
             try:
-                command = json.loads(data.decode())
+                command: Dict[str, float] = json.loads(data.decode())
             except json.JSONDecodeError:
                 print("Invalid JSON:", data)
                 continue
@@ -124,20 +116,21 @@ try:
                     continue
 
                 pin = servo_map[finger]
-
                 move_servo(pin, value)
 
 except KeyboardInterrupt:
-    print("Stopping...")
-
+    print("Stopping server...")
 
 finally:
-    for pwm in PWM.values():
-        pwm.stop()
+    # Stop all servos
+    for port in PORT_SERVO_MAP:
+        for pin in PORT_SERVO_MAP[port].values():
+            pi.set_servo_pulsewidth(pin, 0)
 
-    GPIO.cleanup()
+    pi.stop()
 
+    # Close all sockets
     for sock in sockets:
         sock.close()
 
-    print("GPIO cleaned")
+    print("Clean exit")

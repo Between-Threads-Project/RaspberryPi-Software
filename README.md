@@ -1,19 +1,19 @@
 # Between Threads - Raspberry Pi Software
 
-This repository contains the software running on a Raspberry Pi 3 Model B v1.2. It handles UDP data reception and PWM control for servo motors to actuate the marionette.
+This repository contains the software running on a Raspberry Pi 3 Model B v1.2. It handles UDP data reception and hardware PWM control using `pigpio` for servo motors to actuate the marionette.
 
 ## Features
 
 - **UDP Reception**: Listens on configurable ports for JSON commands.
-- **PWM Control**: Converts received values into PWM signals for servo motors.
+- **High-precision PWM Control**: Uses `pigpio` for stable and accurate servo control.
 - **Finger Mapping**: Associates fingers (index, middle) to specific GPIO pins.
 
 ## Prerequisites
 
 - Raspberry Pi 3 Model B v1.2
 - PWM-compatible servo motors (e.g., SG90)
-- Python >=3.13
-- `RPi.GPIO` library
+- Python >= 3.10
+- `pigpio` daemon
 
 ## Installation
 
@@ -32,19 +32,50 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
-### 3. Configure GPIO pins
+### 3. Install and start `pigpio`
+
+`pigpio` requires a daemon running in the background.
+
+#### Install pigpio
+
+```bash
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+sudo apt install python-setuptools python3-setuptools
+```
+
+#### Start the daemon
+
+```bash
+sudo pigpiod
+```
+
+#### (Optional) Enable auto-start on boot
+
+```bash
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+> [!WARNING]
+> The script will fail if the daemon is not running.
+
+### 4. Configure GPIO pins
 
 Default GPIO pin mapping:
+
 - **Port 5000**:
-  - Index: GPIO 13
-  - Middle: GPIO 12
-- **Port 5001**:
-  - Index: GPIO 19
+  - Index: GPIO 12
   - Middle: GPIO 18
+- **Port 5001**:
+  - Index: GPIO 13
+  - Middle: GPIO 19
 
 Modify `PORT_SERVO_MAP` in `main.py` if needed.
 
-### 4. Run the script
+### 5. Run the script
 
 ```bash
 uv run main.py
@@ -58,14 +89,16 @@ Expected JSON format: `{"index": 0.5, "middle": -0.3}`
 Values range from `-1.0` to `1.0`.
 
 Example using `netcat`:
+
 ```bash
 echo '{"index": 0.5, "middle": -0.3}' | nc -u -w1 <RASPBERRY_IP> 5000
 ```
 
 ### Servo motor control
 
-- Values are converted to angles (0° to 180°).
-- A delay of `SERVO_DELAY` (0.02s) is applied for smooth movements.
+- Values are mapped from `[-1, 1]` to pulse widths (`500µs → 2500µs`).
+- This corresponds roughly to the servo range (~0° to 180°).
+- `pigpio` ensures stable PWM signals (no jitter).
 
 ## Configuration
 
@@ -73,15 +106,15 @@ echo '{"index": 0.5, "middle": -0.3}' | nc -u -w1 <RASPBERRY_IP> 5000
 
 - `HOST`: Listening address (default: `"0.0.0.0"`).
 - `PORT_SERVO_MAP`: Maps UDP ports to GPIO pins.
-- `PWM_FREQ`: PWM frequency (default: 50 Hz).
-- `SERVO_DELAY`: Delay between movements (default: 0.02s).
+- `SERVO_MIN`: Minimum pulse width (default: `500`).
+- `SERVO_MAX`: Maximum pulse width (default: `2500`).
 
 ## Troubleshooting
 
-- **`RPi.GPIO` error**: Ensure the script is run with root privileges or the user has GPIO access.
+- **`pigpio daemon not running`**: Run `sudo pigpiod`.
 - **Servo motors not moving**: Check GPIO connections and power supply (5V).
 - **Network issues**: Ensure the UDP port is accessible and the firewall is configured.
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+MIT License - See [LICENSE.md](LICENSE.md) for details
