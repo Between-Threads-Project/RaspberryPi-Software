@@ -56,8 +56,8 @@ def value_to_pulse(value: float) -> int:
     """
     Convert a normalized value (-1 to 1) to a servo pulsewidth.
     """
-    value = clamp(value, -1.0, 1.0)
-    normalized = (value + 1) / 2
+    value = clamp(value, -0.7, 1.0)
+    normalized = (value + 0.7) / 1.7
     pulse = SERVO_MIN + normalized * (SERVO_MAX - SERVO_MIN)
     return int(pulse)
 
