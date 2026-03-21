@@ -27,7 +27,6 @@ curl -LsSf https://raw.githubusercontent.com/Between-Threads-Project/RaspberryPi
 If it's not running do :
 
 ```bash
-cd ~/pigpio-master
 sudo pigpiod
 ```
 

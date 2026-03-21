@@ -1,9 +1,12 @@
 import json
 import select
 import socket
+import subprocess
 from typing import Dict
 
 import pigpio
+
+import utils
 
 # =========================================================
 # CONFIG
@@ -11,63 +14,32 @@ import pigpio
 
 HOST: str = "0.0.0.0"
 
-PORT_SERVO_MAP: Dict[int, Dict[str, int]] = {
-    5000: {
-        "index": 12,
-        "middle": 18,
-    },
-    5001: {
-        "index": 13,
-        "middle": 19,
-    },
-}
-
-# Pulsewidth range for servos (in microseconds)
-SERVO_MIN: int = 500
-SERVO_MAX: int = 2500
-
 # =========================================================
 # PIGPIO SETUP
 # =========================================================
+
+subprocess.run(["sudo", "pigpiod"])
 
 pi = pigpio.pi()
 
 if not pi.connected:
     raise RuntimeError("pigpio daemon not running")
 
-# Initialize all servo pins
-for port in PORT_SERVO_MAP:
-    for pin in PORT_SERVO_MAP[port].values():
-        pi.set_mode(pin, pigpio.OUTPUT)
+utils.initialize_servos(pi)
+utils.set_servos_to_neutral(pi)
 
-print("Servos initialized")
+print("Servos initialized and set to 90°")
 
 # =========================================================
 # SERVO UTILS
 # =========================================================
 
 
-def clamp(value: float, vmin: float, vmax: float) -> float:
-    """Clamp a value between vmin and vmax."""
-    return max(vmin, min(vmax, value))
-
-
-def value_to_pulse(value: float) -> int:
-    """
-    Convert a normalized value (-1 to 1) to a servo pulsewidth.
-    """
-    value = clamp(value, -0.7, 1.0)
-    normalized = (value + 0.7) / 1.7
-    pulse = SERVO_MIN + normalized * (SERVO_MAX - SERVO_MIN)
-    return int(pulse)
-
-
 def move_servo(pin: int, value: float) -> None:
     """
     Move a servo connected to a given pin using a normalized value.
     """
-    pulse = value_to_pulse(value)
-    pi.set_servo_pulsewidth(pin, pulse)
+    utils.move_servo(pi, pin, value)
 
 
 # =========================================================
@@ -76,7 +48,7 @@ def move_servo(pin: int, value: float) -> None:
 
 sockets: Dict[socket.socket, int] = {}
 
-for port in PORT_SERVO_MAP:
+for port in utils.PORT_SERVO_MAP:
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -84,7 +56,7 @@ for port in PORT_SERVO_MAP:
 
     sockets[sock] = port
 
-print("Listening UDP on ports:", list(PORT_SERVO_MAP.keys()))
+print("Listening UDP on ports:", list(utils.PORT_SERVO_MAP.keys()))
 
 # =========================================================
 # MAIN LOOP
@@ -105,7 +77,7 @@ try:
                 print("Invalid JSON:", data)
                 continue
 
-            servo_map = PORT_SERVO_MAP[port]
+            servo_map = utils.PORT_SERVO_MAP[port]
 
             for finger, value in command.items():
                 if finger not in servo_map:
@@ -123,14 +95,12 @@ except KeyboardInterrupt:
     print("\nStopping.", end=" ")
 
 finally:
-    # Stop all servos
-    for port in PORT_SERVO_MAP:
-        for pin in PORT_SERVO_MAP[port].values():
+    for port in utils.PORT_SERVO_MAP:
+        for pin in utils.PORT_SERVO_MAP[port].values():
             pi.set_servo_pulsewidth(pin, 0)
 
     pi.stop()
 
-    # Close all sockets
     for sock in sockets:
         sock.close()
 
