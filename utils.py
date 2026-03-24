@@ -67,8 +67,8 @@ def set_servos_to_full(pi):
     """
     for port in PORT_SERVO_MAP:
         for pin in PORT_SERVO_MAP[port].values():
-            move_servo(pi, pin, -0.7)
-    print("All servos set to 0°")
+            move_servo(pi, pin, 1.0)
+    print("All servos set to 180°")
 
 
 def initialize_servos(pi):
