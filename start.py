@@ -11,4 +11,4 @@ utils.initialize_servos(pi)
 utils.set_servos_to_zero(pi)
 
 pi.stop()
-print("Servos initialized and set to 90°")
+print("Clean exit")

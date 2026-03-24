@@ -32,10 +32,14 @@ def value_to_pulse(value: float) -> int:
     return int(pulse)
 
 
-def move_servo(pi, pin: int, value: float) -> None:
+def move_servo(pi, pin: int, value: float, port: int) -> None:
     """
     Move a servo connected to a given pin using a normalized value.
+    If port is 5001, invert the control.
     """
+    if port == 5001:
+        value = -value
+
     pulse = value_to_pulse(value)
     pi.set_servo_pulsewidth(pin, pulse)
 
@@ -47,8 +51,8 @@ def set_servos_to_neutral(pi):
     # 0.0 is the neutral position in the normalized range
     for port in PORT_SERVO_MAP:
         for pin in PORT_SERVO_MAP[port].values():
-            move_servo(pi, pin, 0.0)
-    print("All servos set to 90° (neutral position)")
+            move_servo(pi, pin, 0.0, port)
+    print("All servos set to 90°")
 
 
 def set_servos_to_zero(pi):
@@ -57,17 +61,17 @@ def set_servos_to_zero(pi):
     """
     for port in PORT_SERVO_MAP:
         for pin in PORT_SERVO_MAP[port].values():
-            move_servo(pi, pin, -0.7)
+            move_servo(pi, pin, -0.7, port)
     print("All servos set to 0°")
 
 
 def set_servos_to_full(pi):
     """
-    Set all servos to 0°.
+    Set all servos to 180°.
     """
     for port in PORT_SERVO_MAP:
         for pin in PORT_SERVO_MAP[port].values():
-            move_servo(pi, pin, 1.0)
+            move_servo(pi, pin, 1.0, port)
     print("All servos set to 180°")
 
 

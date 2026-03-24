@@ -35,11 +35,11 @@ print("Servos initialized and set to 90°")
 # =========================================================
 
 
-def move_servo(pin: int, value: float) -> None:
+def move_servo(pin: int, value: float, port: int) -> None:
     """
     Move a servo connected to a given pin using a normalized value.
     """
-    utils.move_servo(pi, pin, value)
+    utils.move_servo(pi, pin, value, port)
 
 
 # =========================================================
@@ -89,7 +89,7 @@ try:
                     continue
 
                 pin = servo_map[finger]
-                move_servo(pin, value)
+                move_servo(pin, value, port)
 
 except KeyboardInterrupt:
     print("\nStopping.", end=" ")
