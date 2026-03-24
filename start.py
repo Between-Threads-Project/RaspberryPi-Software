@@ -8,7 +8,7 @@ if not pi.connected:
     raise RuntimeError("pigpio daemon not running")
 
 utils.initialize_servos(pi)
-utils.set_servos_to_neutral(pi)
+utils.set_servos_to_zero(pi)
 
 pi.stop()
 print("Servos initialized and set to 90°")
