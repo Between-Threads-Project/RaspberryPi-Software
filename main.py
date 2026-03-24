@@ -1,7 +1,6 @@
 import json
 import select
 import socket
-import subprocess
 from typing import Dict
 
 import pigpio
@@ -17,8 +16,6 @@ HOST: str = "0.0.0.0"
 # =========================================================
 # PIGPIO SETUP
 # =========================================================
-
-subprocess.run(["sudo", "pigpiod"])
 
 pi = pigpio.pi()
 

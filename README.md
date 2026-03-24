@@ -22,9 +22,9 @@ curl -LsSf https://raw.githubusercontent.com/Between-Threads-Project/RaspberryPi
 ```
 
 > [!WARNING]
-> The install script should lauch the daemon the python script could fail if it is not running.
+> The install script should launch the daemon. The Python script could fail if it is not running.
 
-If it's not running do :
+If it's not running, do:
 
 ```bash
 sudo pigpiod
@@ -41,7 +41,10 @@ Default GPIO pin mapping:
   - Index: GPIO 13
   - Middle: GPIO 19
 
-Modify `PORT_SERVO_MAP` in `main.py` if needed.
+> [!IMPORTANT]
+> Servo motors on port 5001 have their rotation inverted. A positive value will rotate them in the opposite direction compared to port 5000.
+
+Modify `PORT_SERVO_MAP` in `utils.py` if needed.
 
 ### 5. Run the script
 
@@ -68,10 +71,11 @@ echo '{"index": 0.5, "middle": -0.3}' | nc -u -w1 <RASPBERRY_IP> 5000
 - Values are mapped from `[-1, 1]` to pulse widths (`500µs → 2500µs`).
 - This corresponds roughly to the servo range (~0° to 180°).
 - `pigpio` ensures stable PWM signals (no jitter).
+- **Port 5001**: Servo rotation is inverted for this port.
 
 ## Configuration
 
-### Parameters in `main.py`
+### Parameters in `utils.py`
 
 - `HOST`: Listening address (default: `"0.0.0.0"`).
 - `PORT_SERVO_MAP`: Maps UDP ports to GPIO pins.

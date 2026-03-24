@@ -20,14 +20,19 @@ cd RaspberryPi-Software
 # ---------------------------
 echo "📦 Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Ajout PATH pour systemd
+export PATH="$HOME/.local/bin:$PATH"
+
 echo "🔄 Synchronizing dependencies..."
 uv sync
 
 # ---------------------------
-# 3. Install pigpio
+# 3. Install pigpio (from source)
 # ---------------------------
 echo "💾 Installing pigpio..."
 cd ~
+
 if [ ! -d "pigpio-master" ]; then
     wget -O pigpio-master.zip https://github.com/joan2937/pigpio/archive/master.zip
     unzip pigpio-master.zip
@@ -36,19 +41,70 @@ if [ ! -d "pigpio-master" ]; then
     sudo make install
     sudo apt install -y python-setuptools python3-setuptools
 else
-    echo "pigpio already installed, skipping."
-    cd pigpio-master
+    echo "pigpio already installed, skipping build."
 fi
 
 # ---------------------------
-# 4. Start pigpio daemon
+# 4. Create pigpiod service
 # ---------------------------
-echo "⚡ Starting pigpio daemon..."
-sudo pigpiod
+echo "⚡ Creating pigpiod service..."
+
+PIGPIO_SERVICE=/etc/systemd/system/pigpiod.service
+
+sudo bash -c "cat > $PIGPIO_SERVICE" <<EOL
+[Unit]
+Description=Pigpio Daemon
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/pigpiod
+ExecStop=/bin/systemctl kill pigpiod
+Type=forking
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
 
 # ---------------------------
-# 5. Done
+# 5. Create app service
+# ---------------------------
+echo "⚙️ Creating app service..."
+
+APP_SERVICE=/etc/systemd/system/between-threads.service
+
+sudo bash -c "cat > $APP_SERVICE" <<EOL
+[Unit]
+Description=Between Threads Service
+After=network.target pigpiod.service
+Requires=pigpiod.service
+
+[Service]
+User=$USER
+WorkingDirectory=/home/$USER/Desktop/RaspberryPi-Software
+ExecStart=/bin/bash -c 'cd /home/$USER/Desktop/RaspberryPi-Software && /home/$USER/.local/bin/uv run main.py'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# ---------------------------
+# 6. Enable services
+# ---------------------------
+echo "🚀 Enabling services..."
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+
+sudo systemctl enable between-threads.service
+sudo systemctl start between-threads.service
+
+# ---------------------------
+# 7. Done
 # ---------------------------
 echo "✅ Installation complete!"
-echo "Move to the folder with : cd ~/Desktop/RaspberryPi-Software/"
-echo "Run your script with: uv run main.py"
+echo "Your app + pigpio will now run automatically on boot 🚀"
