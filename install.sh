@@ -21,11 +21,8 @@ cd RaspberryPi-Software
 echo "📦 Installing uv..."
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Ajout PATH pour systemd
-export PATH="$HOME/.local/bin:$PATH"
-
 echo "🔄 Synchronizing dependencies..."
-uv sync
+~/.local/bin/uv sync
 
 # ---------------------------
 # 3. Install pigpio (from source)
@@ -39,7 +36,6 @@ if [ ! -d "pigpio-master" ]; then
     cd pigpio-master
     make
     sudo make install
-    sudo apt install -y python-setuptools python3-setuptools
 else
     echo "pigpio already installed, skipping build."
 fi
@@ -49,18 +45,18 @@ fi
 # ---------------------------
 echo "⚡ Creating pigpiod service..."
 
-PIGPIO_SERVICE=/etc/systemd/system/pigpiod.service
-
-sudo bash -c "cat > $PIGPIO_SERVICE" <<EOL
+sudo tee /etc/systemd/system/pigpiod.service > /dev/null <<EOL
 [Unit]
 Description=Pigpio Daemon
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/pigpiod
-ExecStop=/bin/systemctl kill pigpiod
-Type=forking
-Restart=always
+User=root
+ExecStartPre=/bin/bash -c 'killall pigpiod || true'
+ExecStart=/usr/local/bin/pigpiod -l
+Type=simple
+Restart=on-failure
+RestartSec=2
 
 [Install]
 WantedBy=multi-user.target
@@ -71,9 +67,7 @@ EOL
 # ---------------------------
 echo "⚙️ Creating app service..."
 
-APP_SERVICE=/etc/systemd/system/between-threads.service
-
-sudo bash -c "cat > $APP_SERVICE" <<EOL
+sudo tee /etc/systemd/system/between-threads.service > /dev/null <<EOL
 [Unit]
 Description=Between Threads Service
 After=network.target pigpiod.service
