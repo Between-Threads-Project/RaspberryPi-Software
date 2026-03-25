@@ -37,8 +37,8 @@ def move_servo(pi, pin: int, value: float, port: int) -> None:
     Move a servo connected to a given pin using a normalized value.
     If port is 5001, invert the control.
     """
-    if port == 5001:
-        value = -value
+    if port == 5000:
+        value = -value + 0.3
 
     pulse = value_to_pulse(value)
     pi.set_servo_pulsewidth(pin, pulse)

@@ -40,65 +40,13 @@ else
     echo "pigpio already installed, skipping build."
 fi
 
-# ---------------------------
-# 4. Create pigpiod service
-# ---------------------------
-echo "⚡ Creating pigpiod service..."
-
-sudo tee /etc/systemd/system/pigpiod.service > /dev/null <<EOL
-[Unit]
-Description=Pigpio Daemon
-After=network.target
-
-[Service]
-User=root
-ExecStartPre=/bin/bash -c 'killall pigpiod || true'
-ExecStart=/usr/local/bin/pigpiod -l
-Type=simple
-Restart=on-failure
-RestartSec=2
-
-[Install]
-WantedBy=multi-user.target
-EOL
+#--------------------------
+# 4. Launch pigpio daemon
+# -------------------------
+sudo pigpiod
 
 # ---------------------------
-# 5. Create app service
-# ---------------------------
-echo "⚙️ Creating app service..."
-
-sudo tee /etc/systemd/system/between-threads.service > /dev/null <<EOL
-[Unit]
-Description=Between Threads Service
-After=network.target pigpiod.service
-Requires=pigpiod.service
-
-[Service]
-User=$USER
-WorkingDirectory=/home/$USER/Desktop/RaspberryPi-Software
-ExecStart=/bin/bash -c 'cd /home/$USER/Desktop/RaspberryPi-Software && /home/$USER/.local/bin/uv run main.py'
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
-# ---------------------------
-# 6. Enable services
-# ---------------------------
-echo "🚀 Enabling services..."
-
-sudo systemctl daemon-reexec
-sudo systemctl daemon-reload
-
-sudo systemctl enable pigpiod
-sudo systemctl start pigpiod
-
-sudo systemctl enable between-threads.service
-sudo systemctl start between-threads.service
-
-# ---------------------------
-# 7. Done
+# 5. Done
 # ---------------------------
 echo "✅ Installation complete!"
 echo "Your app + pigpio will now run automatically on boot 🚀"
