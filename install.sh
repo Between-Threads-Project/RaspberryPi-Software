@@ -25,11 +25,19 @@ cd "$APP_DIR"
 # ---------------------------
 # 2. Install uv + dependencies
 # ---------------------------
-echo "📦 Installing uv..."
-curl -LsSf https://astral.sh/uv/install.sh | sh
+UV_PATH="$HOME/.local/bin/uv"
+
+echo "📦 Checking if uv is installed..."
+
+if [ -f "$UV_PATH" ]; then
+    echo "✅ uv already installed at $UV_PATH"
+else
+    echo "⬇️ Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
 
 echo "🔄 Synchronizing dependencies..."
-~/.local/bin/uv sync
+"$UV_PATH" sync
 
 # ---------------------------
 # 3. Install pigpio
@@ -81,11 +89,12 @@ Requires=${SERVICE_PIGPIO}.service
 [Service]
 User=${USER_NAME}
 WorkingDirectory=/home/${USER_NAME}/Desktop/RaspberryPi-Software
-
-ExecStart=/bin/bash -c "uv run main.py"
+ExecStart=/home/${USER_NAME}/.local/bin/uv run main.py
 
 Restart=always
 RestartSec=3
+
+Environment=PATH=/home/${USER_NAME}/.local/bin:/usr/bin:/bin
 
 [Install]
 WantedBy=multi-user.target
