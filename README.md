@@ -17,17 +17,37 @@ This repository contains the software running on a Raspberry Pi 3 Model B v1.2. 
 
 ## Installation
 
+Run the install script which will **clone the repo, install dependencies, compile pigpio, and create systemd services** for automatic startup:
+
 ```bash
 curl -LsSf https://raw.githubusercontent.com/Between-Threads-Project/RaspberryPi-Software/main/install.sh | sh
 ```
 
-> [!WARNING]
-> The install script should launch the daemon. The Python script could fail if it is not running.
+### What the install script does
 
-If it's not running, do:
+1. Clones the repository into ~/Desktop/RaspberryPi-Software.
+2. Installs the uv dependency manager and syncs Python dependencies.
+3. Downloads, compiles, and installs pigpio.
+4. Creates two systemd services:
+    - pigpiod-custom.service → runs the pigpio daemon automatically at boot.
+    -	between-threads.service → runs the main Python script and restarts if it crashes.
+5. Enables and starts both services automatically.
+
+> [!NOTE]
+> After installation, both services will run automatically on boot. No manual sudo pigpiod is required.
+
+### Check service status
 
 ```bash
-sudo pigpiod
+sudo systemctl status pigpiod-custom
+sudo systemctl status between-threads
+```
+
+### Restart services
+
+```bash
+sudo systemctl restart pigpiod-custom
+sudo systemctl restart between-threads
 ```
 
 ### 4. Configure GPIO pins

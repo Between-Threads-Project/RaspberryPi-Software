@@ -59,7 +59,8 @@ After=network.target
 
 [Service]
 ExecStart=/usr/local/bin/pigpiod
-ExecStop=/bin/systemctl kill pigpiod-custom
+Type=forking
+PIDFile=/run/pigpio.pid
 Restart=always
 
 [Install]
@@ -73,14 +74,16 @@ echo "⚙️ Creating app service..."
 
 sudo tee /etc/systemd/system/${SERVICE_APP}.service > /dev/null <<EOF
 [Unit]
-Description=Between Threads App
-After=network.target ${SERVICE_PIGPIO}.service
+Description=Marionnette Service
+After=${SERVICE_PIGPIO}.service
 Requires=${SERVICE_PIGPIO}.service
 
 [Service]
 User=${USER_NAME}
-WorkingDirectory=${APP_DIR}
-ExecStart=${HOME}/.local/bin/uv run receiver.py
+WorkingDirectory=/home/${USER_NAME}/Desktop/RaspberryPi-Software
+
+ExecStart=/bin/bash -c "uv run main.py"
+
 Restart=always
 RestartSec=3
 
