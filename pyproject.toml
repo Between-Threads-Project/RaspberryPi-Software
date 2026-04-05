@@ -9,4 +9,5 @@ dependencies = [
     "pigpio>=1.78",
     "ruff>=0.15.6",
     "uvicorn>=0.43.0",
+    "websockets>=16.0",
 ]
