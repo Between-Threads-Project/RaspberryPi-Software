@@ -63,7 +63,7 @@ try:
     ws_thread = threading.Thread(target=start_ws_server, daemon=True)
     ws_thread.start()
 
-    print("WebSocket server started on port 8000")
+    print("WebSocket server started on port 3000")
 
     while True:
         readable, _, _ = select.select(list(sockets.keys()), [], [])

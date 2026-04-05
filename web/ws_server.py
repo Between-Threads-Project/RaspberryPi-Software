@@ -3,7 +3,8 @@ import subprocess
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, WebSocket
-from state import get_state
+
+from web.state import get_state
 
 app = FastAPI()
 clients = set()
@@ -89,4 +90,4 @@ async def end_script():
 
 
 def start_ws_server():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=3000)
