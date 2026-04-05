@@ -1,13 +1,11 @@
 import json
 import select
 import socket
-import threading
 from typing import Dict
 
 import pigpio
 
-import utils
-from web.ws_server import start_ws_server
+import core.utils as utils
 
 # =========================================================
 # CONFIG
@@ -60,11 +58,6 @@ print("Listening UDP on ports:", list(utils.PORT_SERVO_MAP.keys()))
 # =========================================================
 
 try:
-    ws_thread = threading.Thread(target=start_ws_server, daemon=True)
-    ws_thread.start()
-
-    print("WebSocket server started on port 8000")
-
     while True:
         readable, _, _ = select.select(list(sockets.keys()), [], [])
 
