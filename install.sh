@@ -4,7 +4,6 @@ set -e
 echo "🚀 Starting installation for Between Threads - Raspberry Pi Software"
 
 APP_DIR="$HOME/Desktop/RaspberryPi-Software"
-SERVICE_APP="between-threads"
 SERVICE_PIGPIO="pigpiod-custom"
 USER_NAME=$(whoami)
 
@@ -76,32 +75,7 @@ WantedBy=multi-user.target
 EOF
 
 # ---------------------------
-# 5. Create app service
-# ---------------------------
-echo "⚙️ Creating app service..."
-
-sudo tee /etc/systemd/system/${SERVICE_APP}.service > /dev/null <<EOF
-[Unit]
-Description=Marionnette Service
-After=${SERVICE_PIGPIO}.service
-Requires=${SERVICE_PIGPIO}.service
-
-[Service]
-User=${USER_NAME}
-WorkingDirectory=/home/${USER_NAME}/Desktop/RaspberryPi-Software
-ExecStart=/home/${USER_NAME}/.local/bin/uv run main.py
-
-Restart=always
-RestartSec=3
-
-Environment=PATH=/home/${USER_NAME}/.local/bin:/usr/bin:/bin
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# ---------------------------
-# 6. Enable + start services
+# 5. Enable + start services
 # ---------------------------
 echo "🔄 Enabling services..."
 
@@ -109,21 +83,17 @@ sudo systemctl daemon-reexec
 sudo systemctl daemon-reload
 
 sudo systemctl enable ${SERVICE_PIGPIO}
-sudo systemctl enable ${SERVICE_APP}
 
 sudo systemctl start ${SERVICE_PIGPIO}
-sleep 2
-sudo systemctl start ${SERVICE_APP}
 
 # ---------------------------
-# 7. Status
+# 6. Status
 # ---------------------------
 echo "📊 Services status:"
 sudo systemctl status ${SERVICE_PIGPIO} --no-pager
-sudo systemctl status ${SERVICE_APP} --no-pager
 
 # ---------------------------
-# 8. Done
+# 7. Done
 # ---------------------------
 echo "✅ Installation complete!"
 echo "🚀 pigpiod + your app are now running and will start automatically on boot"
