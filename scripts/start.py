@@ -2,13 +2,19 @@ import pigpio
 
 from core.utils import initialize_servos, set_servos_to_zero
 
-pi = pigpio.pi()
 
-if not pi.connected:
-    raise RuntimeError("pigpio daemon not running")
+def main():
+    pi = pigpio.pi()
 
-initialize_servos(pi)
-set_servos_to_zero(pi)
+    if not pi.connected:
+        raise RuntimeError("pigpio daemon not running")
 
-pi.stop()
-print("Clean exit")
+    initialize_servos(pi)
+    set_servos_to_zero(pi)
+
+    pi.stop()
+    print("Clean exit")
+
+
+if __name__ == "__main__":
+    main()
