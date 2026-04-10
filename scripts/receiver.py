@@ -81,3 +81,7 @@ def main(stop_event: Optional[threading.Event] = None):
             sock.close()
 
         print("Clean exit.")
+
+
+if __name__ == "__main__":
+    main()

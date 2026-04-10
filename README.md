@@ -7,6 +7,7 @@ This repository contains the software running on a Raspberry Pi 3 Model B v1.2. 
 - **UDP Reception**: Listens on configurable ports for JSON commands.
 - **High-precision PWM Control**: Uses `pigpio` for stable and accurate servo control.
 - **Finger Mapping**: Associates fingers (index, middle) to specific GPIO pins.
+- **Web API**: Control scripts and receive real-time updates via WebSocket ([API Documentation](API_DOCUMENTATION.md)).
 
 ## Prerequisites
 
